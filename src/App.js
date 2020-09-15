@@ -35,6 +35,7 @@ function App() {
         })
         
       }
+      
       )
 
       spotify.getPlaylist('65ojyE4xJXBoyW0ZMKpFtS').then(response=>{
@@ -43,9 +44,19 @@ function App() {
             discover_weekly:response
           })
       })
+      spotify.getMyTopArtists().then((response) =>
+      dispatch({
+        type: "SET_TOP_ARTISTS",
+        top_artists: response,
+      })
+    );
+    dispatch({
+      type: "SET_SPOTIFY",
+      spotify: spotify,
+    });
       }
       
-  }, [])
+  }, [token, dispatch])
   console.log('👦',discover_weekly);
   console.log("app",playlists);
   return (

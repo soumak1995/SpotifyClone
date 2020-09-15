@@ -9,23 +9,66 @@ import {Grid,Slider} from '@material-ui/core';
 import PlaylistPlayIcon from '@material-ui/icons/PlaylistPlay';
 import VolumeDownIcon from '@material-ui/icons/VolumeDown';
 import {useDataLayerValue} from './DataLayer'
+import PauseCircleOutlineIcon from "@material-ui/icons/PauseCircleOutline";
 function Footer({spotify}) {
-    const [{item},dispatch]=useDataLayerValue();
+    const [{token, item, playing },dispatch]=useDataLayerValue();
     useEffect(() => {
-        spotify.getMyCurrentPlaybackState().then((r) => {
-          console.log(r);
+        spotify.getMyCurrentPlaybackState().then((res) => {
+          console.log(res);
     
           dispatch({
             type: "SET_PLAYING",
-            playing: r.is_playing,
+            playing: res.is_playing,
           });
     
           dispatch({
             type: "SET_ITEM",
-            item: r.item,
+            item: res.item,
           });
         });
       }, [spotify]);
+      const skipNext = () => {
+        spotify.skipToNext();
+        spotify.getMyCurrentPlayingTrack().then((res) => {
+          console.log('Paying'+res)
+          dispatch({
+            type: "SET_ITEM",
+            item: res.item,
+          });
+          dispatch({
+            type: "SET_PLAYING",
+            playing: true,
+          });
+        });
+      };
+      const handlePlayPause = () => {
+        if (playing) {
+          spotify.pause();
+          dispatch({
+            type: "SET_PLAYING",
+            playing: false,
+          });
+        } else {
+          spotify.play();
+          dispatch({
+            type: "SET_PLAYING",
+            playing: true,
+          });
+        }
+      };
+      const skipPrevious = () => {
+        spotify.skipToPrevious();
+        spotify.getMyCurrentPlayingTrack().then((res) => {
+          dispatch({
+            type: "SET_ITEM",
+            item: res.item,
+          });
+          dispatch({
+            type: "SET_PLAYING",
+            playing: true,
+          });
+        });
+      };
     return (
         <div className="footer">
            <div className="footer__left">
@@ -48,9 +91,21 @@ function Footer({spotify}) {
            </div>
            <div className="footer__center">
             <ShuffleIcon className="footer__green"/>
-            <SkipPreviousIcon className="footer__icon"/>
-            <PlayCircleOutlineIcon fontSize="large" className="footer__icon"/>
-            <SkipNextIcon className="footer__icon"/>
+            <SkipPreviousIcon onClick={skipNext} className="footer__icon"/>
+            {playing ? (
+          <PauseCircleOutlineIcon
+            onClick={handlePlayPause}
+            fontSize="large"
+            className="footer__icon"
+          />
+        ) : (
+          <PlayCircleOutlineIcon
+            onClick={handlePlayPause}
+            fontSize="large"
+            className="footer__icon"
+          />
+        )}
+            <SkipNextIcon  onClick={skipPrevious}  className="footer__icon"/>
             <RepeatIcon className="footer__green"/>
            </div>
            <div className="footer__right">
